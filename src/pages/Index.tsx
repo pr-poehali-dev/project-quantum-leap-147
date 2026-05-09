@@ -1,8 +1,10 @@
+import { useState } from "react"
 import ShaderBackground from "@/components/ShaderBackground"
 import HeroContent from "@/components/HeroContent"
 import PulsingCircle from "@/components/PulsingCircle"
 import Header from "@/components/Header"
 import Icon from "@/components/ui/icon"
+import func2url from "../../backend/func2url.json"
 
 const portfolioItems = [
   { id: 1, label: "Французский маникюр", sub: "Классика", gradient: "from-rose-100 to-pink-50" },
@@ -40,6 +42,8 @@ const schedule = [
   { day: "Воскресенье", time: "Выходной", active: false },
 ]
 
+type FormState = "idle" | "loading" | "success" | "error"
+
 const SectionLabel = ({ text }: { text: string }) => (
   <span className="text-pink-500/60 text-[10px] uppercase tracking-[0.2em] font-medium">{text}</span>
 )
@@ -49,6 +53,44 @@ const SectionTitle = ({ children }: { children: React.ReactNode }) => (
 )
 
 const Index = () => {
+  const [formName, setFormName] = useState("")
+  const [formPhone, setFormPhone] = useState("")
+  const [formService, setFormService] = useState("")
+  const [formState, setFormState] = useState<FormState>("idle")
+  const [formError, setFormError] = useState("")
+
+  const handleBooking = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!formName || !formPhone || !formService) {
+      setFormError("Пожалуйста, заполните все поля")
+      return
+    }
+    setFormState("loading")
+    setFormError("")
+    try {
+      const res = await fetch(func2url.booking, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formName,
+          phone: formPhone,
+          service: formService,
+          return_url: window.location.href + "?booking=success",
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Ошибка сервера")
+      if (data.payment_url) {
+        window.location.href = data.payment_url
+      } else {
+        setFormState("success")
+      }
+    } catch (err: unknown) {
+      setFormState("error")
+      setFormError(err instanceof Error ? err.message : "Произошла ошибка")
+    }
+  }
+
   return (
     <div className="bg-[#0d0008]">
       <ShaderBackground>
@@ -168,29 +210,67 @@ const Index = () => {
               <Icon name="ArrowUpRight" size={14} className="text-white/20 ml-auto group-hover:text-white/50 transition-colors" />
             </a>
 
-            <div className="p-5 rounded-2xl border border-pink-500/15 bg-pink-950/20 space-y-3">
-              <div className="text-white/25 text-[10px] uppercase tracking-widest mb-2">Заявка онлайн</div>
-              <input
-                type="text"
-                placeholder="Ваше имя"
-                className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white text-sm font-light placeholder:text-white/20 focus:outline-none focus:border-pink-400/40 transition-colors"
-              />
-              <input
-                type="tel"
-                placeholder="Номер телефона"
-                className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white text-sm font-light placeholder:text-white/20 focus:outline-none focus:border-pink-400/40 transition-colors"
-              />
-              <select className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white/40 text-sm font-light focus:outline-none focus:border-pink-400/40 transition-colors appearance-none">
-                <option value="" className="bg-[#1a0012]">Выберите услугу</option>
-                <option value="manicure" className="bg-[#1a0012]">Маникюр</option>
-                <option value="pedicure" className="bg-[#1a0012]">Педикюр</option>
-                <option value="nails" className="bg-[#1a0012]">Наращивание</option>
-                <option value="design" className="bg-[#1a0012]">Дизайн</option>
-              </select>
-              <button className="w-full py-3 rounded-xl bg-pink-500 hover:bg-pink-400 text-white text-sm font-medium tracking-wide transition-all duration-200 cursor-pointer shadow-lg shadow-pink-900/30">
-                Отправить заявку
-              </button>
-            </div>
+            {formState === "success" ? (
+              <div className="p-8 rounded-2xl border border-pink-400/20 bg-pink-950/20 flex flex-col items-center gap-3 text-center">
+                <div className="w-12 h-12 rounded-full bg-pink-500/20 flex items-center justify-center">
+                  <Icon name="Check" size={22} className="text-pink-300" />
+                </div>
+                <p className="text-white/80 text-sm font-light">Заявка принята! Мы свяжемся с вами в ближайшее время.</p>
+                <button onClick={() => { setFormState("idle"); setFormName(""); setFormPhone(""); setFormService("") }} className="text-pink-400/60 text-xs hover:text-pink-400 transition-colors">
+                  Отправить ещё раз
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleBooking} className="p-5 rounded-2xl border border-pink-500/15 bg-pink-950/20 space-y-3">
+                <div className="text-white/25 text-[10px] uppercase tracking-widest mb-2">Заявка онлайн</div>
+                <input
+                  type="text"
+                  placeholder="Ваше имя"
+                  value={formName}
+                  onChange={e => setFormName(e.target.value)}
+                  className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white text-sm font-light placeholder:text-white/20 focus:outline-none focus:border-pink-400/40 transition-colors"
+                />
+                <input
+                  type="tel"
+                  placeholder="Номер телефона"
+                  value={formPhone}
+                  onChange={e => setFormPhone(e.target.value)}
+                  className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white text-sm font-light placeholder:text-white/20 focus:outline-none focus:border-pink-400/40 transition-colors"
+                />
+                <select
+                  value={formService}
+                  onChange={e => setFormService(e.target.value)}
+                  className="w-full bg-white/4 border border-white/8 rounded-xl px-4 py-3 text-white/40 text-sm font-light focus:outline-none focus:border-pink-400/40 transition-colors appearance-none"
+                >
+                  <option value="" className="bg-[#1a0012]">Выберите услугу</option>
+                  <option value="manicure" className="bg-[#1a0012]">Маникюр — от 1 500 ₽</option>
+                  <option value="pedicure" className="bg-[#1a0012]">Педикюр — от 1 800 ₽</option>
+                  <option value="nails" className="bg-[#1a0012]">Наращивание — от 2 500 ₽</option>
+                  <option value="design" className="bg-[#1a0012]">Дизайн — от 500 ₽</option>
+                </select>
+                {formError && (
+                  <p className="text-pink-400 text-xs">{formError}</p>
+                )}
+                <button
+                  type="submit"
+                  disabled={formState === "loading"}
+                  className="w-full py-3 rounded-xl bg-pink-500 hover:bg-pink-400 disabled:opacity-50 text-white text-sm font-medium tracking-wide transition-all duration-200 cursor-pointer shadow-lg shadow-pink-900/30 flex items-center justify-center gap-2"
+                >
+                  {formState === "loading" ? (
+                    <>
+                      <Icon name="Loader2" size={14} className="animate-spin" />
+                      Отправляем...
+                    </>
+                  ) : (
+                    <>
+                      <Icon name="CreditCard" size={14} />
+                      Записаться и оплатить
+                    </>
+                  )}
+                </button>
+                <p className="text-white/15 text-[10px] text-center">Оплата через ЮКасса · Безопасно</p>
+              </form>
+            )}
           </div>
         </div>
       </section>
