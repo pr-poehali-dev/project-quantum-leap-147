@@ -10,21 +10,21 @@ export default function HeroContent() {
           <span className="text-white/90 text-xs font-light relative z-10">Маникюр · Педикюр · Уход за ногтями</span>
         </div>
 
-        <h1 className="text-5xl md:text-6xl md:leading-16 tracking-tight font-light text-white mb-4">
-          <span className="font-medium italic">Ногти</span> вашей
+        <h1 className="font-display text-6xl md:text-7xl leading-none tracking-tight text-white mb-5">
+          <span className="italic font-light">Ногти</span> вашей
           <br />
-          <span className="font-light tracking-tight text-white">мечты</span>
+          <span className="font-light">мечты</span>
         </h1>
 
-        <p className="text-xs font-light text-white/70 mb-4 leading-relaxed">
-          Профессиональный маникюр и педикюр, гель-лак, наращивание и дизайн. Запись онлайн или по телефону — удобно и быстро.
+        <p className="text-xs font-light text-white/60 mb-6 leading-relaxed max-w-sm">
+          Маникюр, педикюр, наращивание и дизайн. Запись онлайн или по телефону.
         </p>
 
-        <div className="flex items-center gap-4 flex-wrap">
-          <a href="#portfolio" className="px-8 py-3 rounded-full bg-transparent border border-white/30 text-white font-normal text-xs transition-all duration-200 hover:bg-white/10 hover:border-white/50 cursor-pointer">
+        <div className="flex items-center gap-3 flex-wrap">
+          <a href="#portfolio" className="px-7 py-2.5 rounded-full bg-transparent border border-white/25 text-white/80 font-light text-xs tracking-wide transition-all duration-300 hover:bg-white/8 hover:border-white/50 hover:text-white cursor-pointer">
             Мои работы
           </a>
-          <a href="#booking" className="px-8 py-3 rounded-full bg-white text-pink-900 font-normal text-xs transition-all duration-200 hover:bg-pink-100 cursor-pointer">
+          <a href="#booking" className="px-7 py-2.5 rounded-full bg-white/95 text-pink-900 font-medium text-xs tracking-wide transition-all duration-300 hover:bg-white cursor-pointer shadow-lg shadow-pink-900/20">
             Записаться
           </a>
         </div>
